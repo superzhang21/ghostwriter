@@ -25,14 +25,18 @@ metadata:
 
 ## 快速开始
 
-### 1. 安装（Hermes Agent 用户）
+### 1. 安装
 
+**独立使用（推荐，零依赖）：**
 ```bash
-# 克隆本项目
 git clone https://github.com/superzhang21/ghostwriter.git
 cd ghostwriter
+python3 skill/scripts/ghostwriter-sync.py --list
+```
 
-# 安装为 Hermes skill
+**作为 Hermes Agent Skill：**
+```bash
+git clone https://github.com/superzhang21/ghostwriter.git
 ln -s $(pwd)/skill ~/.hermes/skills/creative/ghostwriter
 ```
 
@@ -77,6 +81,8 @@ python3 skill/scripts/ghostwriter-sync.py --info 林黛玉
 | 李云龙 | 《亮剑》 | Liangjian_LiYunlong.json |
 | 吕子乔 | 《爱情公寓》 | Aiqinggongyu_LvZiqiao.json |
 | 胡锡进 | 微博 | Weibo_Hu.json |
+
+> 📌 角色库持续更新中。想加角色？去 [Issues](https://github.com/superzhang21/ghostwriter/issues) 提需求。
 
 ## 角色数据结构
 
