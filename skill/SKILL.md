@@ -1,7 +1,7 @@
 ---
 name: ghostwriter
-description: "Use when switching AI persona/language style. Syncs 13+ character profiles (Ding Yuanying, Lin Daiyu, Lu Xun, Li Yunlong, etc.) from this repo, generates persona prompts with thinking patterns, rhetoric, and speech traits."
-version: 1.0.0
+description: "Use when switching AI persona/language style. Syncs 13+ character profiles (Ding Yuanying, Lin Daiyu, Lu Xun, Li Yunlong, etc.) from GitHub, generates persona prompts with thinking patterns, rhetoric, and speech traits."
+version: 1.1.0
 author: superzhang21
 license: CC-BY-NC-ND-4.0
 metadata:
@@ -14,8 +14,10 @@ metadata:
 
 ## Overview
 
-本项目包含 13+ 个角色的语言与思维特征数据（JSON），可通过配套脚本一键生成 persona prompt，
+本项目包含 13+ 个角色的语言与思维特征数据，可通过配套脚本一键生成 persona prompt，
 注入 AI 对话即可切换角色风格。支持写作模仿、角色扮演、风格迁移等场景。
+
+**脚本完全独立，不依赖任何 Agent 框架。** 任何能执行 Python 脚本的环境都能用。
 
 ## When to Use
 
@@ -39,6 +41,9 @@ python3 skill/scripts/ghostwriter-sync.py --list
 git clone https://github.com/superzhang21/ghostwriter.git
 ln -s $(pwd)/skill ~/.hermes/skills/creative/ghostwriter
 ```
+
+**其他 Agent / 通用：**
+脚本只需 Python 3.8+，能执行 shell 命令的 Agent 都能调用。
 
 ### 2. 列出所有角色
 
@@ -84,28 +89,35 @@ python3 skill/scripts/ghostwriter-sync.py --info 林黛玉
 
 > 📌 角色库持续更新中。想加角色？去 [Issues](https://github.com/superzhang21/ghostwriter/issues) 提需求。
 
-## 角色数据结构
+## 路径策略
 
-每个 JSON 包含：
-- **心理特征**：哲学观、价值观、决策风格、情绪反应、人际互动、动机、自我认知
-- **语言特征**：词汇措辞、句式结构、语气风格、修辞手法、互动模式
-- **人际关系** + **角色弧线**
+脚本的 data 目录始终位于 **skill/data/** 下（与 scripts/ 平级），无论 skill 被安装到哪里：
 
-## 非 Hermes 用户
-
-本项目可独立使用。`skill/scripts/ghostwriter-sync.py` 不依赖 Hermes 框架：
-
-```bash
-# 直接运行（自动同步数据）
-python3 skill/scripts/ghostwriter-sync.py --list
-python3 skill/scripts/ghostwriter-sync.py --apply 丁元英
-
-# 跳过同步，使用本地已有数据
-python3 skill/scripts/ghostwriter-sync.py --list --no-sync
-
-# JSON 输出（适合程序化处理）
-python3 skill/scripts/ghostwriter-sync.py --apply 鲁迅 --json
 ```
+skill/
+├── SKILL.md
+├── data/              ← 角色 JSON 同步到这里
+│   ├── Tiandao_DingYuanying.json
+│   └── ...
+├── scripts/
+│   └── ghostwriter-sync.py
+└── .cache/            ← 临时 git clone 目录（自动管理）
+```
+
+首次运行时自动从 GitHub 克隆并提取 JSON；后续运行自动更新。不需要手动管理项目目录。
+
+## 命令参考
+
+| 命令 | 说明 |
+|------|------|
+| `--list` | 列出所有角色 |
+| `--list --json` | JSON 格式列出角色 |
+| `--info <角色名>` | 查看角色详情 |
+| `--apply <角色名>` | 生成 persona prompt（文本格式） |
+| `--apply <角色名> --json` | 生成 persona prompt（JSON 格式） |
+| `--no-sync` | 跳过 GitHub 同步，使用本地缓存 |
+
+支持按角色名或文件名模糊匹配。
 
 ## Pitfalls
 
@@ -116,6 +128,6 @@ python3 skill/scripts/ghostwriter-sync.py --apply 鲁迅 --json
 
 ## Verification
 
-- [ ] `--list` 正确列出 13 个角色
+- [ ] `--list` 正确列出角色
 - [ ] `--apply 丁元英` 输出完整 persona prompt
 - [ ] `--apply 鲁迅 --json` 返回合法 JSON
