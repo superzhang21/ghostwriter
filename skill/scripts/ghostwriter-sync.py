@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ghostwriter-sync.py — 影子作家角色库管理工具
-从 GitHub 同步角色数据，列出/查看/生成 persona prompt。
+从 GitHub 同步角色数据到本地 data/ 目录，列出/查看/生成 persona prompt。
 
 用法:
   python3 ghostwriter-sync.py                    # 同步 + 列出角色
@@ -23,37 +23,67 @@ from pathlib import Path
 REPO_URL = "https://github.com/superzhang21/ghostwriter.git"
 PROXY_URL = "https://ghfast.top/" + REPO_URL
 
-# 定位 data 目录：脚本所在目录的上级 data/
-SCRIPT_DIR = Path(__file__).resolve().parent
-LOCAL_DIR = SCRIPT_DIR.parent.parent  # skill/ -> ghostwriter/
-DATA_DIR = LOCAL_DIR / "data"
+# ── 路径策略 ──────────────────────────────────────────────
+# 脚本始终在 skill/scripts/ 下，data 目录始终在 skill/data/ 下。
+# 无论 skill 被 symlink 到哪里，data 都跟 skill 走。
+SCRIPT_DIR = Path(__file__).resolve().parent          # skill/scripts/
+SKILL_DIR = SCRIPT_DIR.parent                         # skill/
+DATA_DIR = SKILL_DIR / "data"                         # skill/data/
+CACHE_DIR = SKILL_DIR / ".cache"                      # skill/.cache/ (临时 git clone)
 
 
 def sync_repo():
-    """拉取最新角色库"""
-    if not DATA_DIR.exists():
-        print("正在克隆角色库...")
-        for url in [PROXY_URL, REPO_URL]:
+    """从 GitHub 拉取最新角色 JSON 到本地 data/"""
+    # 已有本地数据时，尝试更新
+    if DATA_DIR.exists() and list(DATA_DIR.glob("*.json")):
+        if CACHE_DIR.exists():
+            print("正在更新角色库...")
             try:
                 subprocess.run(
-                    ["git", "clone", "--depth", "1", url, str(LOCAL_DIR)],
-                    capture_output=True, timeout=60, check=True,
+                    ["git", "-C", str(CACHE_DIR), "pull", "--ff-only"],
+                    capture_output=True, timeout=30,
                 )
-                print("克隆完成")
-                return
             except Exception:
-                continue
-        print("错误: 无法连接 GitHub", file=sys.stderr)
-        sys.exit(1)
-    else:
-        print("正在更新角色库...")
+                print("更新失败，使用本地缓存")
+                return
+            # 同步更新后的 JSON 到 data/
+            _copy_json_files()
+            return
+
+    # 首次同步：clone 到 .cache/，提取 JSON 到 data/
+    print("正在从 GitHub 同步角色库...")
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    for url in [PROXY_URL, REPO_URL]:
         try:
             subprocess.run(
-                ["git", "-C", str(LOCAL_DIR), "pull", "--ff-only"],
-                capture_output=True, timeout=30,
+                ["git", "clone", "--depth", "1", url, str(CACHE_DIR)],
+                capture_output=True, timeout=60, check=True,
             )
+            print("同步完成")
+            _copy_json_files()
+            return
         except Exception:
-            print("更新失败，使用本地缓存")
+            continue
+    print("错误: 无法连接 GitHub", file=sys.stderr)
+    sys.exit(1)
+
+
+def _copy_json_files():
+    """从 .cache/ 的 data/ 目录复制 JSON 到 skill/data/"""
+    src = CACHE_DIR / "data"
+    if not src.exists():
+        print(f"警告: 仓库中未找到 data/ 目录", file=sys.stderr)
+        return
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for f in src.glob("*.json"):
+        dest = DATA_DIR / f.name
+        content = f.read_text(encoding="utf-8")
+        # 写入前先修复格式
+        fixed = fix_json(content)
+        dest.write_text(fixed, encoding="utf-8")
+        count += 1
+    print(f"已同步 {count} 个角色到 {DATA_DIR}")
 
 
 def fix_json(raw: str) -> str:
@@ -182,8 +212,8 @@ def main():
     if not args.no_sync:
         sync_repo()
 
-    if not DATA_DIR.exists():
-        print("错误: 角色库为空，请先同步", file=sys.stderr)
+    if not DATA_DIR.exists() or not list(DATA_DIR.glob("*.json")):
+        print("错误: 角色库为空，请先同步（去掉 --no-sync）", file=sys.stderr)
         sys.exit(1)
 
     if args.list:
