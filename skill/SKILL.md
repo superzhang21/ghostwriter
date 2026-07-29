@@ -1,6 +1,6 @@
 ---
 name: ghostwriter
-description: "Use when switching AI persona/language style. Syncs 15+ character profiles (Ding Yuanying, Lin Daiyu, Lu Xun, Li Yunlong, Cao Cao, Yang Xiu, etc.) from GitHub, generates persona prompts with thinking patterns, rhetoric, and speech traits."
+description: "Use when switching AI persona/language style. Syncs 13+ character profiles (Ding Yuanying, Lin Daiyu, Lu Xun, Li Yunlong, etc.) from GitHub, generates persona prompts with thinking patterns, rhetoric, and speech traits."
 version: 1.1.0
 author: superzhang21
 license: CC-BY-NC-ND-4.0
@@ -13,18 +13,22 @@ metadata:
 # Ghostwriter — 影子作家角色切换系统
 
 ## Overview
-本项目包含 15+ 个角色的语言与思维特征数据，可通过配套脚本一键生成 persona prompt，
+
+本项目包含 13+ 个角色的语言与思维特征数据，可通过配套脚本一键生成 persona prompt，
 注入 AI 对话即可切换角色风格。支持写作模仿、角色扮演、风格迁移等场景。
 
 **脚本完全独立，不依赖任何 Agent 框架。** 任何能执行 Python 脚本的环境都能用。
 
 ## When to Use
+
 - 需要 AI 以特定人物风格说话/写作
 - 角色扮演、文学创作、风格迁移
 - 为 AI 助手注入不同的人格特征
 
 ## 快速开始
+
 ### 1. 安装
+
 **独立使用（推荐，零依赖）：**
 ```bash
 git clone https://github.com/superzhang21/ghostwriter.git
@@ -42,11 +46,13 @@ ln -s $(pwd)/skill ~/.hermes/skills/creative/ghostwriter
 脚本只需 Python 3.8+，能执行 shell 命令的 Agent 都能调用。
 
 ### 2. 列出所有角色
+
 ```bash
 python3 skill/scripts/ghostwriter-sync.py --list
 ```
 
 ### 3. 切换角色
+
 ```bash
 # 生成丁元英的 persona prompt
 python3 skill/scripts/ghostwriter-sync.py --apply 丁元英
@@ -58,6 +64,7 @@ python3 skill/scripts/ghostwriter-sync.py --apply 鲁迅
 输出的 prompt 片段可直接粘贴到系统提示词中，或通过 `--json` 参数程序化调用。
 
 ### 4. 查看角色详情
+
 ```bash
 python3 skill/scripts/ghostwriter-sync.py --info 林黛玉
 ```
@@ -79,8 +86,6 @@ python3 skill/scripts/ghostwriter-sync.py --info 林黛玉
 | 李云龙 | 《亮剑》 | Liangjian_LiYunlong.json |
 | 吕子乔 | 《爱情公寓》 | Aiqinggongyu_LvZiqiao.json |
 | 胡锡进 | 微博 | Weibo_Hu.json |
-| 杨修 | 《军师联盟》 | Threekingdoms_YangXiu.json |
-| 曹操 | 《军师联盟》 | Threekingdoms_CaoCao.json |
 
 > 📌 角色库持续更新中。想加角色？去 [Issues](https://github.com/superzhang21/ghostwriter/issues) 提需求。
 
