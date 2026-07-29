@@ -20,3 +20,7 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+
+# Ghostwriter skill runtime (sync-generated)
+skill/data/
+skill/.cache/
